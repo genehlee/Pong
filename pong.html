@@ -1,10 +1,36 @@
 <html>
     <head>
         <title>Pong Game</title>
+        <link rel="stylesheet" href="pong.css">
     </head>
 
     <body>
-        <canvas id="canvas" width="400" height="400"></canvas>
+        <row>
+            <div class="column" style="background-color:#aaa;">
+                <canvas id="canvas"></canvas>
+            </div>
+            <div class="column" style="background-color:#bbb;">
+            <!--
+                <input type="text" id="canvasWidth" size="5">
+                <label for="canvasWidth"> x </label>
+                <input type="text" id="canvasHeight" size="5">
+                <label for="canvasHeight">px</label>
+
+                <br>
+            -->
+                
+                <label for="speed">Speed Multiplier: <span id="display speed"></span></label>
+                <br>
+                <input type="range" id="speed" min=0.8 step=0.01>
+        
+                <br>
+        
+                <label for="paddle size">Paddle Size: <span id="display paddle size"></span></label>
+                <br>
+                <input type="range" id="paddle size" min=1>
+            </div>
+        </row>
+        
         <script src="pong.js"></script>
     </body>
 </html>

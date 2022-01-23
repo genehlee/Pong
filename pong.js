@@ -4,7 +4,7 @@ class Paddle {
         this.y = y
         this.width = width
         this.height = height
-        this.speed = speed;
+        this.speed = speed
         this.dY = 0
     }
 
@@ -41,9 +41,6 @@ class Ball {
 
             if(dist > dist_remaining)
                 break
-            
-            console.log(wall_num)
-            console.log(this.dY)
 
             dist_remaining -= dist
 
@@ -70,6 +67,11 @@ class Ball {
                     this.speed *= speedMultiplier
                     paddle.speed *= speedMultiplier
                     dist_remaining *= speedMultiplier
+
+                    // Cap speed
+                    this.speed = Math.min(this.speed, maxSpeed)
+
+                    console.log(this.speed)
                     // Set random new direction
                     this.newDirection()
                     break
@@ -163,21 +165,52 @@ class Ball {
     }
 }
 
-var fps = 30
-var speedMultiplier = 1.2
+var fps = 60
 
 var canvas = document.getElementById("canvas")
-
 var canvasContext = canvas.getContext('2d')
 
-var paddle = new Paddle(5, canvas.height/2, 5, 50, fps/5)
+var speedSlider = document.getElementById("speed")
+var speedDisplay = document.getElementById("display speed")
 
-var ball = new Ball(canvas.width - 5, canvas.height/2, 5, fps/5, "white")
+var paddleSlider = document.getElementById("paddle size")
+var paddleDisplay = document.getElementById("display paddle size")
+
+// Can set width and height to user's choosing
+canvas.width = 600
+canvas.height = 600
+
+// Suggested Values
+var ballRadius = 5
+var paddleWidth = 5
+var initialSpeed = canvas.width/200
+var maxSpeed = canvas.width/24
+var minScoreUntilMaxSpeed = 5
+
+var canvasSize = 400
+var speedMultiplier = 1.1
+var paddleHeight = canvas.height/8
+
+// Setting defaults for HTML
+var maxSpeedMultiplier = Math.floor(Math.pow(maxSpeed / initialSpeed,1 / minScoreUntilMaxSpeed) * 10) / 10
+speedSlider.value = speedMultiplier
+speedSlider.max = maxSpeedMultiplier
+// Display the default slider value
+speedDisplay.innerHTML = speedSlider.value
+
+paddleSlider.value = paddleHeight
+paddleSlider.max = canvas.height
+paddleDisplay.innerHTML = paddleSlider.value
 
 var score = 0
+var paused = false
+
+var paddle = new Paddle(paddleWidth + 10, canvas.height/2, paddleWidth, paddleHeight, initialSpeed)
+var ball = new Ball(canvas.width - ballRadius, canvas.height/2, ballRadius, initialSpeed, "white")
+
 
 window.onload = () => {
-    gameLoop();
+    gameLoop()
 }
 
 function gameLoop() {
@@ -190,12 +223,15 @@ function show() {
 }
 
 function update() {
-    canvasContext.clearRect(0, 0, canvas.width, canvas.height)
-    paddle.move()
-    ball.move()
+    if(!paused) {
+        paddle.move()
+        ball.move()
+    }
 }
 
 function draw() {
+    canvasContext.clearRect(0, 0, canvas.width, canvas.height)
+
     // Board
     canvasContext.fillStyle = "black"
     canvasContext.fillRect(0, 0, canvas.width, canvas.height)
@@ -215,6 +251,15 @@ function draw() {
     canvasContext.font = "20px Arial"
     canvasContext.fillStyle = "#00FF42"
     canvasContext.fillText("Score: " + score, canvas.width - 120, 18)
+
+    if(paused) {
+        canvasContext.fillStyle = "yellow"
+        var pauseWidth = canvas.width/20
+        var pauseHeight = canvas.height/5
+        var pauseGap = pauseWidth 
+        canvasContext.fillRect(canvas.width/2 - pauseWidth/2 - pauseGap, canvas.height/2 - pauseHeight/2, pauseWidth, pauseHeight)
+        canvasContext.fillRect(canvas.width/2 - pauseWidth/2 + pauseGap, canvas.height/2 - pauseHeight/2, pauseWidth, pauseHeight)
+    }
 }
 
 function endGame() {
@@ -224,40 +269,55 @@ function endGame() {
 
 window.addEventListener("keydown", function(event) {
     if(event.defaultPrevented) {
-        return; // Do nothing if already handled
+        return // Do nothing if already handled
     }
 
     switch(event.code) {
         case "ArrowUp":
         case "KeyW":
             paddle.dY = -paddle.speed
-            break;
+            break
         case "ArrowDown":
         case "KeyS":
             paddle.dY = paddle.speed
-            break;
+            break
     }
 
     // Consume the event so it doesn't get handled twice
-    event.preventDefault();
+    event.preventDefault()
 }, true)
 
 window.addEventListener("keyup", function(event) {
     if(event.defaultPrevented) {
-        return; // Do nothing if already handled
+        return // Do nothing if already handled
     }
 
     switch(event.code) {
         case "ArrowUp":
         case "KeyW":
             paddle.dY = 0
-            break;
+            break
         case "ArrowDown":
         case "KeyS":
             paddle.dY = 0
-            break;
+            break
+        case "Space":
+            paused = !paused
+            break
     }
 
     // Consume the event so it doesn't get handled twice
-    event.preventDefault();
+    event.preventDefault()
 }, true)
+
+// Update the current slider value
+speedSlider.oninput = function() {
+    speedDisplay.innerHTML = this.value
+    speedMultiplier = this.value
+}
+
+// Update the current slider value
+paddleSlider.oninput = function() {
+    paddleDisplay.innerHTML = this.value
+    paddle.height = this.value
+}
